@@ -11,7 +11,34 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+     @all_ratings = Movie.get_ratings
+     @movies = Movie.all
+    
+     if session[:ratings].nil? && session[:filtered].nil?
+       session[:filtered] = Movie.get_ratings
+     end
+    
+     if !params[:ratings].nil?
+       @filtered_ratings = params[:ratings]
+       session[:filtered] = @filtered_ratings
+     end
+
+     if !params[:sorted].nil?
+       session[:sorted] = params[:sorted]
+     end
+ 
+     if session[:filtered]
+       @movies = @movies.select{|movie| session[:filtered].include? movie.rating}
+     end
+    
+    if session[:sorted] == "title"
+      @movies = @movies.sort! {|a,b| a.title <=> b.title}
+      @movie_highlight = "hilite"
+    elsif session[:sorted] == "release_date"
+      @movies = @movies.sort! {|a,b| a.release_date <=> b.release_date}
+      @date_highlight = "hilite"
+    end
+    
   end
 
   def new
